@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>ペントミノソルバー</title>
+<style><!--
+
+#manual {
+    border: 1px solid #333;
+}
+#manual > summary {
+    padding: 0 10px;
+    background-color: #eee;
+}
+#manual[open] > summary {
+    font-weight: bold;
+}
+
+#manual > div {
+    padding: 0 10px;
+    border-top: 1px solid #666;
+}
+
+#BoardContainer {
+    float: left;
+    width: 640px;
+    border: 1px solid #222;
+    margin: 0 10px 10px 0;
+}
+#BoardHeader {
+    height: 36px;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid #666;
+}
+#BoardHeader div {
+    padding: 5px;
+    font-size: large;
+}
+
+#Board {
+    width: 630px;
+    height: 378px;
+    padding: 5px;
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+}
+.board-cell {
+    width: 51px;
+    height: 51px;
+    border: 1px solid white;
+    padding: 5px;
+    color: #fff;
+    font-size: large;
+    cursor: pointer;
+    user-select: none;
+}
+.cell-F { background-color: #c66; }
+.cell-I { background-color: #b83; }
+.cell-L { background-color: #aa2; }
+.cell-N { background-color: #8b3; }
+.cell-P { background-color: #6b6; }
+.cell-T { background-color: #3b8; }
+.cell-U { background-color: #2aa; }
+.cell-V { background-color: #38b; }
+.cell-W { background-color: #66c; }
+.cell-X { background-color: #83b; }
+.cell-Y { background-color: #a2a; }
+.cell-Z { background-color: #b38; }
+.cell-A { background-color: #ccc; }
+
+#Palette {
+    width: 630px;
+    height: 216px;
+    border: 1px solid #222;
+    color: white;
+    background-color: #444;
+    padding: 0 5px;
+    display: grid;
+    grid-template-columns: 1fr repeat(7,72px);
+    grid-template-rows: repeat(3, 72px);
+    margin-bottom: 10px;
+}
+#Palette > label {
+    display: block;
+    border-radius: 10px;
+    width: 64px;
+    cursor: pointer;
+    user-select: none;
+}
+#Palette > label { background-color: #222;}
+#Palette > label:has(input.pF:checked) { background-color: #933; }
+#Palette > label:has(input.pI:checked) { background-color: #963; }
+#Palette > label:has(input.pL:checked) { background-color: #993; }
+#Palette > label:has(input.pN:checked) { background-color: #693; }
+#Palette > label:has(input.pP:checked) { background-color: #393; }
+#Palette > label:has(input.pT:checked) { background-color: #396; }
+#Palette > label:has(input.pU:checked) { background-color: #399; }
+#Palette > label:has(input.pV:checked) { background-color: #369; }
+#Palette > label:has(input.pW:checked) { background-color: #339; }
+#Palette > label:has(input.pX:checked) { background-color: #639; }
+#Palette > label:has(input.pY:checked) { background-color: #939; }
+#Palette > label:has(input.pZ:checked) { background-color: #936; }
+#Palette > label:has(input.pA:checked) { background-color: #888; }
+
+#Palette > div, #Palette > label {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 4px;
+    cursor: pointer;
+    user-select: none;
+}
+
+#Palette > label > input{
+    display: none;
+}
+
+.palette-icon {
+    position: absolute;
+    top: calc(50% - 32px);
+    left: calc(50% - 32px);
+    width: 64px;
+    height: 64px;
+    background-image: url(./icons.png);
+    -webkit-user-drag: none;
+}
+
+#Palette .shortcut-key {
+    position: absolute;
+    top: 2px;
+    left: 5px;
+    font-size: small;
+    color: white;
+}
+
+#OutputArea {
+    clear: both;
+    border: 1px solid #222;
+}
+
+.solution {
+    float: left;
+    width: 250px;
+    margin: 8px 8px 20px 8px;
+    font-size: small;
+}
+.solution-number {
+    padding: 2px 5px;
+    font-weight: bold;
+}
+.solution-cells-wrapper {
+    display: grid;
+    grid-template-columns: repeat(10, 25px);
+    border-top: 1px solid #333;
+    border-left: 1px solid #333;
+}
+.solution-cell {
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    border-width: 0 1px 1px 0;
+    border-style: solid;
+    border-color: transparent;
+}
+.solution-cell-F { background-color: #faa; }
+.solution-cell-I { background-color: #fc9; }
+.solution-cell-L { background-color: #ff7; }
+.solution-cell-N { background-color: #cf9; }
+.solution-cell-P { background-color: #afa; }
+.solution-cell-T { background-color: #9fc; }
+.solution-cell-U { background-color: #7ff; }
+.solution-cell-V { background-color: #9bf; }
+.solution-cell-W { background-color: #aaf; }
+.solution-cell-X { background-color: #c9f; }
+.solution-cell-Y { background-color: #f7f; }
+.solution-cell-Z { background-color: #f9c; }
+
+.cell-rb {
+    border-right-color: #333;
+}
+.cell-bb {
+    border-bottom-color: #333;
+}
+
+#PageControls {
+    padding: 5px;
+    border-bottom: solid 1px #333;
+    font-size: large;
+}
+
+#PageControls > input {
+    width: 40px;
+    height: 35px;
+}
+
+#currentPageInfo {
+    display: inline-block;
+    width: 160px;
+    text-align: center;
+}
+
+#PuzzleSolutions {
+    height: calc(90vh - 50px);
+    padding: 5px;
+    overflow-y: scroll;
+}
+
+#solutionNumber {
+    display: inline-block;
+}
+
+--></style>
+</head>
+<body>
+    <header>
+        <h2>ペントミノソルバー</h2> 
+    </header>
+<details id="manual">
+	<summary>説明書 (クリックで開閉)</summary>
+    <div>
+	<p>
+		10×6の長方形を作るペントミノパズルの「途中経過」から解を検索できるツールです。<br>
+		「Tools」から配置したいペントミノを選択して、盤面上に配置して「出力」をクリック/タップすると、その盤面を含む解の一覧がページ下部のボックスに出力されます。<br>
+    </p>
+    <p>
+		盤面の操作
+        <ul>
+            <li>盤面を左クリック：「ツール」で選択したペントミノを配置（ドラッグすることで連続配置可）</li>
+            <li>盤面を右クリック：そのセルのペントミノを消去</li>
+            <li>「Tools」の1～2行目のボタンを左クリック：配置するペントミノを選択</li>
+        </ul>
+    </p>
+    <p>
+		ツールの操作
+        <ul>
+            <li>ペントミノ：「特定のペントミノ」を配置する
+                <ul><li>ショートカットキー：F, I, L, N, P, T, U, V, W, X, Y, Z</li></ul>
+            </li>
+            <li>破線正方形：セルを「ペントミノ未指定」に戻す
+                <ul><li>ショートカットキー：A</li></ul>
+            </li>
+            <li>矢印：盤面を左右反転/上下反転/180度回転</li>
+            <li>「消」：盤面をリセットして空にする</li>
+            <li>「出力」：現在の盤面を含む解を出力</li>
+        </ul>
+    </p>
+    <p>
+		解リストの操作
+        <ul>
+            <li>「←←」：最初の20件を表示</li>
+            <li>「←」：前の20件を表示</li>
+            <li>「→」：次の20件を表示</li>
+            <li>「→→」：最後の20件を表示</li>
+        </ul>
+    </p>
+	</div>
+</details>
+<hr>
+<div id="BoardContainer">
+    <div id="BoardHeader">
+        <div>盤面</div>
+        <div><span style="font-weight: bold;" id="AnswerNumber">2339</span> / 2339 possible answers</div>
+    </div>
+    <div id="Board">Please enable JavaScript and reload the page.</div>
+</div>
+
+<form id="Palette">
+    <div style="grid-row: span 3; cursor: default;">ツール</div>
+    <label style="order: 1;"><input type="radio" name="picked" class="pF" value="F"><span class="palette-icon" style="background-position: top 0px right  64px;"></span><span class="shortcut-key">F</span></label>
+    <label style="order: 2;"><input type="radio" name="picked" class="pI" value="I"><span class="palette-icon" style="background-position: top 0px right 128px;"></span><span class="shortcut-key">I</span></label>
+    <label style="order: 3;"><input type="radio" name="picked" class="pL" value="L"><span class="palette-icon" style="background-position: top 0px right 192px;"></span><span class="shortcut-key">L</span></label>
+    <label style="order: 4;"><input type="radio" name="picked" class="pN" value="N"><span class="palette-icon" style="background-position: top 0px right 256px;"></span><span class="shortcut-key">N</span></label>
+    <label style="order: 5;"><input type="radio" name="picked" class="pP" value="P"><span class="palette-icon" style="background-position: top 0px right 320px;"></span><span class="shortcut-key">P</span></label>
+    <label style="order: 6;"><input type="radio" name="picked" class="pT" value="T"><span class="palette-icon" style="background-position: top 0px right 384px;"></span><span class="shortcut-key">T</span></label>
+    <label style="order: 8;"><input type="radio" name="picked" class="pU" value="U"><span class="palette-icon" style="background-position: top 0px right 448px;"></span><span class="shortcut-key">U</span></label>
+    <label style="order: 9;"><input type="radio" name="picked" class="pV" value="V"><span class="palette-icon" style="background-position: top 0px right 512px;"></span><span class="shortcut-key">V</span></label>
+    <label style="order:10;"><input type="radio" name="picked" class="pW" value="W"><span class="palette-icon" style="background-position: top 0px right 576px;"></span><span class="shortcut-key">W</span></label>
+    <label style="order:11;"><input type="radio" name="picked" class="pX" value="X"><span class="palette-icon" style="background-position: top 0px right 640px;"></span><span class="shortcut-key">X</span></label>
+    <label style="order:12;"><input type="radio" name="picked" class="pY" value="Y"><span class="palette-icon" style="background-position: top 0px right 704px;"></span><span class="shortcut-key">Y</span></label>
+    <label style="order:13;"><input type="radio" name="picked" class="pZ" value="Z"><span class="palette-icon" style="background-position: top 0px right 768px;"></span><span class="shortcut-key">Z</span></label>
+    <label style="order: 7; grid-row: span 2; order: 7;"><input type="radio" name="picked" class="pA" value="A"><span class="palette-icon" style="background-position: top 0px right 832px;"></span><span class="shortcut-key">A</span></label>
+    <div style="order:14; background-color: #775; order:14; " title="盤面を左右反転" onclick="rotateBoard(1)"><span class="palette-icon" style="background-position: top 0px right 896px;"></span></div>
+    <div style="order:15; background-color: #775; order:15; " title="盤面を上下反転" onclick="rotateBoard(2)"><span class="palette-icon" style="background-position: top 0px right 960px;"></span></div>
+    <div style="order:16; background-color: #775; order:16; " title="盤面を180度回転" onclick="rotateBoard(3)"><span class="palette-icon" style="background-position: top 0px right 1024px;"></span></div>
+    <div style="order:17; background-color: #C33; order:17; " title="盤面をリセット" onclick="clearBoard()"><span style="font-size: 200%">消</span></div>
+    <div style="order:18; grid-column: span 2; background-color: #396; order:18; " title="解を出力" onclick="getSolutionList()"><span style="font-size: 200%">出力</span></div>
+</form>
+
+<div id="OutputArea" style="margin-top: 5px;">
+    <div id="PageControls">
+        <span style="display:inline-block; width:100px;">解リスト</span>
+        <input type="button" value="←←" id="PageChangeFirst" onclick="changePage(-120)" disabled>
+        <input type="button" value="←" id="PageChangePrev" onclick="changePage(-1)" disabled>
+        <span id="currentPageInfo"></span>
+        <input type="button" value="→" id="PageChangeNext" onclick="changePage(1)" disabled>
+        <input type="button" value="→→" id="PageChangeLast" onclick="changePage(120)" disabled>
+        <span id="solutionNumber"></span>
+    </div>
+    <div id="PuzzleSolutions">
+        （「出力」ボタンを押すと、条件に合う解一覧がここに出力されます）
+    </div>
+</div>
+<script src="./solver.js"></script>
+</body>
+</html>
